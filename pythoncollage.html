@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Collage Education</title>
+    <!-- The style.css file allows you to change the look of your web pages.
+         If you include the next line in all your web pages, they will all share the same look.
+         This makes it easier to make new pages for your site. -->
+    <script defer src="/stretchtext.js"></script>
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+    <link type="text/css" rel="stylesheet" href="/stretchtext.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<h2>A Collage Education</h2>
+<h4>(making collages in Python)</h4>
+<a href="/collages/allcollages.html">
+<script>
+document.write('<img src="/collages/'+Math.floor(Math.random()*210)+'.png"><br>'); document.close();
+</script>
+</a>
+In March 2019, I developed an interest in generating some images using existing paintings. After a few false starts, I finally picked the project back up in December 2019.
+<br><a href="#theapproach">the approach</a>
+<br><a href="#somedetails">some details</a>
+<br><a href="#thegoods">the goods</a>
+<h5><a name="theapproach">The approach</a></h5>
+After a bit of noodling, I <span epub-type="stretchsummary">downgraded my ambition</span>
+<span epub-type="stretchdetail"><hr><hr>
+Here were some of the false starts I had on this project:
+<h5>Neural Networks</h5>
+I was going to use this as a chance to explore neural networks. Given that my laptop does not have an NVIDIA GPU (no CUDA) and that I haven't tinkered with even simple neural network architectures, this seemed like a bad first step. It sounds like <a href="https://colab.research.google.com/notebooks/intro.ipynb" target="_blank" rel="noopener">Google Colab</a> might be a nice place to experiment with these things without needing a <span epub-type="stretchsummary">different laptop</span><span epub-type="stretchdetail"><font size="2" color="gray">a.k.a. a change of 'chinery</font></span> or going down the AMD rabbithole. 
+<h5> Simple Linear Regression</h5>
+When I started, there was a lot of noise about <a href="https://arxiv.org/abs/1806.06850" target="_blank" rel="noopener">this</a> paper (or I think there was...the paper seems to be from mid 2018 so maybe I was looking at crystallized noise from yesteryear). That made me think: how about a simple regression? Maybe one model per color per pixel, or one model per color per patch, or one model per color per image. Compressing a patch or an image to single value was not something I explored, and doing something "per pixel" with a 300x300 image is...silly. It took forever to run and produced ugly noise, so I stopped exploring this path. That is not to say it is impossible, just that it was not worth the effort for me or my little laptop.
+<hr><hr></span>
+from image generation to image recombination. The pixel was no longer a sufficient building block for creating an image: any naive approach to sampling and pasting pixels is going to wind up looking like noise. When I thought about the way people remix images, <span epub-type="stretchsummary">collage</span>
+<span epub-type="stretchdetail"><hr><hr>
+This is less fun than a magic painting generator, but just as collages are among the first art projects for many, so too is this my first go.
+<hr><hr></span>
+was the first medium that came to mind.
+
+<br><br>It started making sense to take a group of pixels as a building block. It feels natural to think of an image as composed of some figures, be they men or cats or houses or some abstract chunks of color. The problem here is defining and identifying figures in the paintings. In fact, just call a figure a "blob" and this turns out to be a well known class of problems called <a href="https://en.wikipedia.org/wiki/Blob_detection">blob detection.</a> I found this out late in my journey, and I imagine a lot of blob detection methods are more clever than the method I chose. I landed on <span epub-type="stretchsummary">k-means,</span>
+<span epub-type="stretchdetail"><hr><hr>
+<ol>
+<li>Pick a number of clusters N.</li>
+<li>Initialize N points.</li>
+<li> Assign pixels to the point they are
+<span epub-type="stretchsummary">closest</span>
+<span epub-type="stretchdetail"><hr><hr>
+In this case, we are talking about the Euclidean distance between a pixel and a
+<span epub-type="stretchsummary">mean-pixel,</span><span epub-type="stretchdetail"><img src="/images/mean_pixel.png"><font size="2" color="gray">grr</font></span>
+ but there are a lot of other ways we could calculate our distance, like the Manhattan distance (the absolute value of the difference between the two points). Any one of <a href="https://en.wikipedia.org/wiki/Minkowski_distance">these</a> could be given a shot.
+<hr><hr></span>
+to. If this is not the first iteration, and no points changed clusters, call it quits.</li>
+<li>For each cluster, average the assigned points to generate a new mean. Return to step 3.</li>
+</ol>
+<hr><hr></span>
+ because it seemed natural for me to think of blobs as being made up of pixels of a  
+<span epub-type="stretchsummary">similar color.</span>
+<span epub-type="stretchdetail"><hr><hr>
+A pixel can be thought of as <span epub-type="stretchsummary">a point in 3D space,</span>
+<span epub-type="stretchdetail"><hr><hr>
+Specifically, it's a point in a cube. <font color="red">R</font><font color="green">G</font><font color="blue">B</font> colorspace is <a href="https://math.stackexchange.com/questions/1777699/color-space-as-a-vector-space">not a vector space</a>. My (limited) understanding from reading that is that a vector space has to be defined over a field, and color values do not form a field because they don't obey some key <a href="https://en.wikipedia.org/wiki/Field_(mathematics)#Classic_definition">field axioms</a>. Since every element of the set of 8-bit colors has to be a natural number n such that 0 &le; n &le; 255, there can be no additive or multiplicative inverses that are also elements of the set (i.e. 8-bit colors are not closed under taking either of these inverses).
+<hr><hr></span>
+ where its <font color="red">red</font>, <font color="green">green</font>, and <font color="blue">blue</font> values are coordinates. Why is it neat that a pixel is a point? Well, we can do some neat things with points, like compute the Euclidean distance or the Manhattan distance between them, or average them to create a new point, or take find their geometric median. And if we can do these things, we can apply certain clustering algorithms to our pixels.
+<hr><hr></span><a href="https://courses.cs.ut.ee/MTAT.08.020/2016_fall/uploads/Main/Blob.pdf">This idea</a> is not unheard of.
+<br><br>
+There are two big issues I see with this naive approach to grabbing blobs. The first issue is that color similarity is not always the defining feature of what we might intuitively call a figure. The second issue is that there is no notion of connectedness to our blobs. Let's watch the script in action:
+
+<video src="/collages/dog_example_lowq.mp4" controls></video>
+<br>Do you see what's happening?
+
+Take a look at the final painting.
+<img src="/collages/dog_ex_intuitive.png">
+On the left, we see two lovely doggies. On the right, we see six ugly blobbies. In orange, I circled an example of an intuitive figure: a whole dog. In red, I circled the unintuitive figure: a butchered dog. That highlights issue number one: we don't want to butcher dogs. Notice that our dog-blob is deep purple. We can see that same dog-blob contains parts of a tree and some choicer cuts of our butchered dog. That highlights issue number two: we can't take care of a dog and a tree.
+<br>
+<br>
+Issue number one seems tough to tackle. As long as I cluster solely on color, I will always wind up butchering figures with a lot of color variance (like a black and white dog). I have <span epub-type="stretchsummary">very rough thoughts</span>
+<span epub-type="stretchdetail"><hr><hr>
+Here's a sketch of where my thoughts are:
+<ul>
+<li>Once we cluster, we can go and label every connected component in the image.</li>
+<li>From there, we should be able to define and locate edges for those connected components.</li>
+<li>If we walk from the edge of a given connected component to the boundary of the image itself, what other connected components do we cross?</li>
+<li>For every connected component, we have an ordered collection of crossings for each direction.</li>
+<li>That information should let us define something like containment, where e.g. a dog might contain its spots, and both might be contained by a background. This containment might need  the ability to be "weak" or "strong" or something like that, but I think it is something that can be done.</li>
+</ul>
+I'll need to do some reading.
+<hr><hr></span>
+that I might like to polish, but I'm also gathering <span epub-type="stretchsummary">some reading material</span>
+<span epub-type="stretchdetail"><hr><hr>
+<a href="https://www.robots.ox.ac.uk/~vgg/publications/2016/Crowley16a/crowley16a-low-res.pdf">This whole thesis.</a>
+<br><a href="https://homepages.inf.ed.ac.uk/ecrowley/publications/pdfs/crowley14.pdf">This paper from before that thesis.</a>
+<br><a href="https://dspace.library.uu.nl/bitstream/handle/1874/367794/thesis-v18.pdf?sequence=2">Another thesis, focused on hands.</a>
+<br><a href="http://luthuli.cs.uiuc.edu/~daf/CV2E-site/detectingextracts.pdf">Chapter 17 of <i>Computer Vision: A Modern Approach</i></a>
+<hr><hr></span>
+
+on this in case I revisit the project. Feel free to share any ideas.
+<br>
+<br>
+Issue number two seems easier to address. We need to introduce connectivity. Since we pick only one color-blob per iteration we essentially have a binary image, which means there are some <a href="https://en.wikipedia.org/wiki/Connected-component_labeling#One_component_at_a_time">straightforward methods</a> available to us. We use the linked algorithm, which I think amounts to a <a href="https://en.wikipedia.org/wiki/Depth-first_search">depth-first search</a> (unless of course I <span epub-type="stretchsummary">implemented incorrectly).</span>
+<span epub-type="stretchdetail"><hr><hr>
+This doesn't count as incorrect, but I didn't use recursion which is strange considering I've been abusing recursion at work recently.
+<hr><hr></span>
+We then take the largest connected component of the randomly selected cluster and paste that into the new image.
+
+<br>
+<br>
+Let's watch the script in action now that we've introduced connectivity:
+<video src="/collages/connected_dog_example_lowq.mp4" controls></video>
+<br><span epub-type="stretchsummary">Not bad!</span>
+<span epub-type="stetchdetail"><hr><hr>
+Of course, it's not great either. Dogs are still being butchered. You might also have noticed that the component from the second image <span epub-type="stretchsummary">wraps around.</span><span epub-type="stretchdetail"><font size="2" color="gray">in the future we will paint on tori</font></span>. Unfortunately I made the video before I noticed the problem, but I did wind up putting bounds on pixel neighbors to prevent this.
+<hr><hr></span>
+
+<br><br>The final approach is as follows:
+<ul>
+	<li>Take a <span epub-type="stretchsummary">string of words</span>
+	<span epub-type="stretchdetail"><hr><hr>
+	I'm using a random sample from a big <a href="https://github.com/dwyl/english-words">list of Enlish words</a>, but there's no reason I couldn't just sample from the image titles themselves or 
+	<span epub-type="stretchsummary">take user input.</span>
+	<span epub-type="stretchdetail"><hr><hr>
+	I had configured the script as a Flask app that ran on a Raspberry Pi hooked up to a monitor. The Pi served up an HTML form where I could submit words to generate an image and display it to the screen. This was educational but also overkill.
+	<hr><hr></span>
+	<hr><hr></span>
+	as input (this could be a user entered value or a randomly selected word).</li>
+	<li>Flip through a directory of images and nab any painting whose title contains a search word.</li>
+	<li>Sample a random image.</li>
+	<li>Cluster the pixels in the image using k-means.</li>
+	<li>Choose a random cluster.</li>
+	<li>Label the connected components in the chosen cluster.</li>
+	<li>Take the largest connected component.</li>
+	<li>Place each pixel from this connected component in the same position in the new image (so long as that position is currently empty).</li>
+	<li>Iterate until every pixel in the new image is non-black or <span epub-type="stretchsummary">200 iterations</span>
+	<span epub-type="stretchdetail"><hr><hr>
+	Why 200, you ask? Well, I wish I had a reason. I didn't even think to sanity check myself on this.
+	<br> Now is better than never, so let's choose a reasonable limit. Here's a plot of the total number of non-black pixels at every iteration for 75 different runs:
+	<br><img src="/collages/iterations_vs_pixels_v3.png">
+	<br>It looks like anywhere from 120 to 150 iterations is more sensible as stopping point.
+	<hr><hr></span>
+	have occurred.</li>
+</ul>
+
+<h5><a name="somedetails">Some details</a></h5>
+It took an average of 191 iterations and 13m49s to generate an image on my laptop. My laptop is a second generation Lenovo ThinkPad X1 Yoga with 8 GB RAM and an Intel Core i7-7500U @ 2.70 GHz.
+<span epub-type="stretchsummary">
+Here's a table with the main pieces of the loop and the time they took to run.
+</span>
+<span epub-type="stretchdetail"><hr><hr>
+Would you believe pandas has a <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_latex.html">built-in method for spitting out LaTeX</a>?
+Just keep in mind that MathJax won't render tables, so you'll need to <a href="https://math.meta.stackexchange.com/questions/6734/how-can-i-put-a-table-here">fake it with an array</a>.
+<hr><hr></span>
+Zeros do not imply instant operations, just something much less than 1 ms.
+
+\begin{array}{lr}
+\hline
+{} Operation &   Time\;(sec) \\
+\hline
+np.atleast\_3d          &   0.000 \\
+element-wise\;addition              &   0.000 \\
+array.reshape      &   0.000 \\
+array.reshape      &   0.000 \\
+element-wise\;multiplication    &   0.001 \\
+element-wise\;multiplication    &   0.001 \\
+KMeans.predict     &   0.018 \\
+ConnectedComponents &   0.161 \\
+KMeans.fit         &   4.139 \\
+\hline
+Total              &   4.326 \\
+\end{array}
+<br>It might be a little silly to bother comparing individual operations with entire algorithms. The point is that after we cluster, we <span epub-type="stretchsummary">don't really add</span>
+<span epub-type="stretchdetail"><hr><hr>
+When I implemented the depth-first search for connected component labelling, I made the mistake of using an list to keep track of the labelled pixels. Since I was only checking membership and not iterating over this information, a set was actually the better type. Checking membership in a set takes constant time. Checking membership in a list takes linear time. Labelling connected components was taking an average of 40.56 seconds with a list. It takes 0.16 seconds with a set. At 191 iterations per image generated, I was adding over 2 hours with this mistake.
+<hr><hr></span>
+very much complexity. If we want to generate images faster, we're going to get the most benefit <span epub-type="stretchsummary">targetting the k-means algorithm.</span>
+<span epub-type="stretchdetail"><hr><hr>
+If I were to revisit this project, there are a few interesting methods available for speeding up k-means:
+<ul>
+<li>Algorithms</li>
+<ul>
+<li>Sci-kit learn is going to <a href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html">default</a> to <a href="http://people.csail.mit.edu/tieu/notebook/kmeans/kmeansicml03.pdf">Elkan's algorithm.</a></li>
+<li><a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/ding15.pdf">Yinyang k-means</a> appears to be an options that achieves some speed-up over Elkan's.</li>
+<li>There's also <a href="https://avira.github.io/dsblog/2016-09-01-speeding-up-k-means.html">this "block vector" approach.</a></li>
+<li>Combining Yinyang and the block vector approach may <a href="http://proceedings.mlr.press/v48/bottesch16.pdf">also be an option.</a>
+</ul>
+<li>Architectures</li>
+<ul>
+<li><a href="https://www.sciencedirect.com/science/article/pii/S0022000012000992">Using GPU(s)</a> instead of CPU(s) is something I need to learn much more about.</li>
+<li>K-means might be ripe for <a href="https://cse.buffalo.edu/faculty/miller/Courses/CSE633/Chandramohan-Fall-2012-CSE633.pdf">paralleization.</a></li>
+</ul>
+<li>Languages</li>
+<ul>
+<li>
+<span epub-type="stretchsummary">It could pay to rewrite the script up in a more performant language.</span>
+<span epub-type="stretchdetail"><hr><hr>
+As far as <a href="https://stackoverflow.com/questions/7596612/benchmarking-python-vs-c-using-blas-and-numpy">I've read</a>, numpy is pretty well-optimized for many of the operations. Yet in <a href="https://github.com/andreaferretti/kmeans/blob/master/results">one benchmark</a> I found, vanilla Python doesn't look so hot (72x slower than the fastest language, and 19x slower than PyPy).
+<br>
+I've been itching to learn Julia, but I'm not sure this will be first on the list of projects.
+<hr><hr></span></li>
+</ul>
+</ul>
+<hr><hr></span>
+<br><br>
+
+And how does varying k change things? 
+\begin{array}{lrrrrr}
+{}K &      Pixels\ Added\;per\;Iteration & Total\;Iteration\;(sec) & KMeans.fit\;(sec) &  KMeans.predict\;(sec) &  ConnectedComponents\;(sec)\\
+\hline
+5 &  745 &    2.523 &         2.303 &             0.017 &                 0.194 \\
+6 &  455 &    3.344 &         3.145 &             0.018 &                 0.174 \\
+7 &  434 &    4.281 &         4.099 &             0.018 &                 0.156 \\
+8 &  320 &    5.375 &         5.205 &             0.018 &                 0.144 \\
+9 &  299 &    6.247 &         6.087 &             0.019 &                 0.134 \\
+\end{array}
+
+In KMeans, we need to calculate k distances each time we assign a given pixel to its proper cluster, so it is no surprise that <span epub-type="stretchsummary">time grows</span>
+<span epbu-type="stretchdetail"><hr><hr>
+In fact, we calculate k Euclidean distances in d-dimensions for each of the n data, and generally we iterate at least i times, which is why k-means is generally said to be <a href="https://en.wikipedia.org/wiki/K-means_clustering#Complexity">O(nkdi)</a>. In our case, we've got d = 3 and n = 90,000, and sklearn places a default maximum i = 300. Nothing to sneeze at for my little laptop.
+<hr><hr></span>
+with k. <span epub-type="stretchsummary">A smaller k value means larger clusters</span>
+<span epub-type="stretchdetail"><hr><hr>
+The simplest (and weakest) way I can think about this: we need at least 1 pixel per cluster, so the theoretical maximum cluster of N pixels can't be any bigger than N-k. Of course, that would be an extremely homogeneous image, and the increase we see in the <span epub-type="stretchsummary">average number of pixels per iteration</span>
+<span epub-type="stretchdetail">
+<font size="2" color="gray">which is the same as the number of pixels in the largest connected component of our chosen cluster</font>
+</span> clearly isn't just linear in k like this imagined upper bound is.
+It would be interesting to explore how different data distributions affect cluster size and other properties of k-means.
+<hr><hr></span>
+and vice versa. The connected components of a larger cluster are likely to be large themselves. Based on this, it makes sense that we see more pixels per iteration and longer connected components runtimes with smaller k.
+<br><br>
+There is a lot to revisit here if I so choose. I don't know if I'd consider myself a collage graduate, but I am certainly collage educated.
+<h5><a name="thegoods">The goods</a></h5>
+<a href="/collages/paintings/all_paintings.html">Here are all the images I have.</a>
+<br><a href="https://github.com/metmuseum/openaccess">Here</a> is the source for those images, and <a href="https://github.com/trevorfiez/The-Metropolitan-Museum-of-Art-Image-Downloader">here</a>
+<span epub-type="stretchsummary"> is where I found out about that source.</span>
+<span epub-type="stretchdetail"><hr><hr>
+Funnily enough, I reviewed some of the old files I have from March 2019, and I'm not 100% sure I used Trevor's Python script. I might have failed to get it working (or something like that). I have his script, which uses the urllib2 library, in one folder from March. I have a different script, which uses the requests library, in another folder.
+<br><br>
+I raise this mainly to highlight the fact that it's important to document what you do! I think I need to start maintaining a sort of "lab notebook" for my projects.
+<hr><hr></span>
+<br><a href="/collages/python_collages.py">Here</a> is the code that generates the images (I tried to name everything such that if you've read up to this point you will know exactly what you're looking at, but I'm happy to go back and comment everything in detail if someone tells me it is unclear).
+<br>
+<br>P.S. This wound up being my favorite image even though it was generated very early in the project before everything was baked.
+<img src="/collages/55.png">
+<br>I also wound up running the script over all <a href="https://en.wikipedia.org/wiki/Thirty-six_Views_of_Mount_Fuji"><i>Thirty-six Views of Mount Fuji</i></a>, because it seemed like a lot of fun and the colors pop a lot more in those beauties.
+<br><img src="collages/211.png"><img src="collages/212.png">
+</body>
+</html>

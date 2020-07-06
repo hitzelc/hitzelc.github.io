@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes on swarms</title>
+    <!-- The style.css file allows you to change the look of your web pages.
+         If you include the next line in all your web pages, they will all share the same look.
+         This makes it easier to make new pages for your site. -->
+    <link href="/style_notes.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+  
+    <p>Starlings form murmurations, which are a particularly delightful form of flocking behavior.</p>
+    <img src="/images/murmuration.gif" alt="A murmuration of starlings, gif taken from https://www.thisiscolossal.com/2017/11/the-art-of-flying/ who in turn created the gif from the short film The Art of Flying https://vimeo.com/241007433">
+    <p>The rule that leads to this particular behavior appears to be topological in nature rather than metric. That is to say, starlings adjust their flight behavior based on their nearest neighbors, irrespective of the distance between those neighbors and themselves.</p>
+    <p>At least one field study puts the number of neighbors at around 6 or 7. This appears to be a constant. Similar constants have been observed in shoaling fish.</p>
+    <p>A proposed reason that a topological rule is observed rather than a metric rule is that the topological rule is more robust to predation. That is, when subjected to an attack from a predator such as a hawk, flocks using the topological rule will tend to stay together, while flocks using the the metric rule will tend to divide. Simulations seem to bear this out (one wonders if there isn't a proof hiding there).</p>
+    <p>In very sparse swarms of animals (like certain schools of fish), it may be the case that the metric distance between individuals does matter. This is because vision puts a real constraint on the ability to detect a nearest neighbor. In this case it is supposed that the topological rule would still hold, but that it would be coupled with a metric cut-off determined by the visual range of the organism<sup><a href="#1">1</a></sup>.</p>
+    <br>
+    
+    Next read(s):
+    <br>https://www.pnas.org/content/pnas/111/29/10422.full.pdf
+    <br>https://doi.org/10.1103/PhysRevLett.75.1226
+    <br>https://arxiv.org/pdf/cond-mat/9712154.pdf
+    <br>https://cseweb.ucsd.edu/classes/fa01/cse291/hclh/SceneReconstruction.pdf
+    <br>https://doi.org/10.1006/jtbi.1996.0144
+    
+    <hr>
+    <div class="csl-bib-body" style="line-height: 1.35; margin-left: 2em; text-indent:-2em;">
+    <div id="1" class="csl-entry">Ballerini, M., N. Cabibbo, R. Candelier, A. Cavagna, E. Cisbani, I. Giardina, V. Lecomte, et al. “Interaction Ruling Animal Collective Behavior Depends on Topological Rather than Metric Distance: Evidence from a Field Study.” <i>Proceedings of the National Academy of Sciences</i> 105, no. 4 (January 29, 2008): 1232–37. <a href="https://doi.org/10.1073/pnas.0711437105">https://doi.org/10.1073/pnas.0711437105</a>.
+    </div>
+    <span class="Z3988" title="url_ver=Z39.88-2004&amp;ctx_ver=Z39.88-2004&amp;rfr_id=info%3Asid%2Fzotero.org%3A2&amp;rft_id=info%3Adoi%2F10.1073%2Fpnas.0711437105&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Ajournal&amp;rft.genre=article&amp;rft.atitle=Interaction%20ruling%20animal%20collective%20behavior%20depends%20on%20topological%20rather%20than%20metric%20distance%3A%20Evidence%20from%20a%20field%20study&amp;rft.jtitle=Proceedings%20of%20the%20National%20Academy%20of%20Sciences&amp;rft.stitle=Proceedings%20of%20the%20National%20Academy%20of%20Sciences&amp;rft.volume=105&amp;rft.issue=4&amp;rft.aufirst=M.&amp;rft.aulast=Ballerini&amp;rft.au=M.%20Ballerini&amp;rft.au=N.%20Cabibbo&amp;rft.au=R.%20Candelier&amp;rft.au=A.%20Cavagna&amp;rft.au=E.%20Cisbani&amp;rft.au=I.%20Giardina&amp;rft.au=V.%20Lecomte&amp;rft.au=A.%20Orlandi&amp;rft.au=G.%20Parisi&amp;rft.au=A.%20Procaccini&amp;rft.au=M.%20Viale&amp;rft.au=V.%20Zdravkovic&amp;rft.date=2008-01-29&amp;rft.pages=1232-1237&amp;rft.spage=1232&amp;rft.epage=1237&amp;rft.issn=0027-8424%2C%201091-6490&amp;rft.language=en">
+    </span>
+    <div id="2" class="csl-entry">Pearce, D. J. G., A. M. Miller, G. Rowlands, and M. S. Turner. “Role of Projection in the Control of Bird Flocks.” <i>Proceedings of the National Academy of Sciences</i> 111, no. 29 (July 22, 2014): 10422–26. <a href="https://doi.org/10.1073/pnas.1402202111">https://doi.org/10.1073/pnas.1402202111</a>.
+    </div>
+    <span class="Z3988" title="url_ver=Z39.88-2004&amp;ctx_ver=Z39.88-2004&amp;rfr_id=info%3Asid%2Fzotero.org%3A2&amp;rft_id=info%3Adoi%2F10.1073%2Fpnas.1402202111&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Ajournal&amp;rft.genre=article&amp;rft.atitle=Role%20of%20projection%20in%20the%20control%20of%20bird%20flocks&amp;rft.jtitle=Proceedings%20of%20the%20National%20Academy%20of%20Sciences&amp;rft.stitle=Proceedings%20of%20the%20National%20Academy%20of%20Sciences&amp;rft.volume=111&amp;rft.issue=29&amp;rft.aufirst=D.%20J.%20G.&amp;rft.aulast=Pearce&amp;rft.au=D.%20J.%20G.%20Pearce&amp;rft.au=A.%20M.%20Miller&amp;rft.au=G.%20Rowlands&amp;rft.au=M.%20S.%20Turner&amp;rft.date=2014-07-22&amp;rft.pages=10422-10426&amp;rft.spage=10422&amp;rft.epage=10426&amp;rft.issn=0027-8424%2C%201091-6490&amp;rft.language=en">
+    </span>
+    </div>
+    
+    
+    <a href="/notebook/index.html">[BACK]</a>
+  </body>
+</html>
