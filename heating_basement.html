@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Heating Basement</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <br><a href="/">[HOME]</a>
+    <h2>It's not always true that you should heat your basement.</h2>
+    <p>This will be a quick, snack-sized write up to dump something I did a few months ago onto this website. Nothing special here, I am just trying to build back up some sort of writing habit.</p>
+    <hr><h4>Gist</h4>
+    <p>This past winter I found myself wondering if I should be heating my basement. The internet seemed to indicate that I probably should be. It turns out that it was better not to.</p
+    <p>To clarify things a bit, when I say "heating," I really mean "heating over a minimum safe temperature," i.e. heating with a setpoint one might consider comfortable vs heating with a setpoint with the sole purpose of avoiding freeze-ups.</p>
+    <hr><h4>"Experiment"</h4>
+    <p>At the time I decided to test this, I had the basement thermostat set to 59 deg F. On January 23rd, I increased the setpoint to 65 deg F.</p>
+    <p>The house is heated by an oil boiler feeding baseboard radiators. I don't have any digital read on the oil level or the consumptive habits of the boiler itself. However, I did have a device in the boiler room which takes temperature readings.</p>
+    <p>The nature of the bang-bang thermostat control is such that temperature is allowed to fall until it dips below the setpoint, at which point the boiler runs until the temperature rises above the setpoint, at which points the boiler stops.
+        So what we observe is that the temperature falls, reaches a minimum, then rises, reaches a maximum, then falls again, and so on.</p>
+    <p>This pattern can be exploited to estimate the boiler run time. I chose to compute the <a target="_blank" href="https://en.wikipedia.org/wiki/Symmetric_derivative#The_second_symmetric_derivative">second derivative</a> of the temperature, which I then smoothed via a moving average with a window size of 4 intervals (the temperature data was 5-min interval data, so this was a 20-min window).</p>
+    <p>Picking some epsilon (I chose 0.1 by vibe) we then construct a series that is 1 if the numerical second derivative is less than -epsilon, -1 if the numerical second derivative is greater than epsilon, and 0 otherwise.</p>
+    <div>
+    \[
+    s(t) = \begin{cases} 
+    1 & \text{if } T''(t) < -\epsilon \\
+    -1 & \text{if } T''(t) > \epsilon \\
+    0 & \text{otherwise}
+    \end{cases}
+    \]
+    </div>
+    <p>Moving through this series, we switch to or maintain the state "on" when we encounter a 1, switch to or maintain the state "off" when we encounter a -1, and simply keep the last state if we encounter a 0.</p>
+    <img src="images/2nd_deriv_eg.png"></img>
+    <p>The total count of all intervals in the "on" state then represents a proxy for the total daily runtime of the boiler (Where 5 times the count gives an estimate of the number of minutes).
+        We can plot the daily runtime against the daily average temperature and get an idea of how the different heating policies stack up against different environmental conditions.</p>
+    <img src="images/boiler_experiment.png"></img>
+    <p>Here are some summary statistics. Other than the count (which is the number of days for each test condition), you're looking at runtime statistics in hours.</p>
+    <div>
+        \begin{array}{|c|c|c|c|c|c|c|c|c|}
+        \hline
+        \text{} & \text{Experiment} & \text{Count} & \text{Mean} & \text{Std} & \text{Min} & \text{25%} & \text{50%} & \text{75%} & \text{Max} \\
+        \hline
+         & \text{FALSE} & 41 & 7.69 & 2.12 & 2.58 & 6.58 & 8 & 8.92 & 11.5 \\
+         & \text{TRUE} & 29 & 9.31 & 2.01 & 4.42 & 8.08 & 9.17 & 10.83 & 13.5 \\
+        \hline
+        \end{array}        
+    </div>
+    <hr><h4>...so?</h4>
+    <p>Given that I found articles stating that running a warmer finished basement will help you heat the rest of your home more efficiently, I was surprised to find that the boiler was on for ~1.6 hours longer, on average, per day, when the setpoint was 6 degrees higher.</p>
+    <p>To be fair, it does appear, visually, that the warm basement policy might outperform when things get really cold.</p>
+    <p>What's the lesson here? I'm not sure. Probably the online sources are mostly right for most homes, and some combination of my home's geometry, layout, heating system, or build materials make this not the case. The real question is: is this indicative of a need to insulate or do some other upgrade? I don't know enough to know!  In any case, I'll be maintaining the minimum viable setpoint until I do know.</p>
+</body>
+</html>
