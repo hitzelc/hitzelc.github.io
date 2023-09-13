@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vicsek Model</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <base target="_blank">
+</head>
+<body>
+    <br><a href="/">[HOME]</a>
+    <hr><h2>The Vicsek model</h2>
+    <img src="/images/murmuration.gif" alt="A murmuration of starlings, gif taken from https://www.thisiscolossal.com/2017/11/the-art-of-flying/ who in turn created the gif from the short film The Art of Flying https://vimeo.com/241007433">
+    <p>I've recently^ been getting into what I guess is called <a href="https://en.wikipedia.org/wiki/Active_matter">active matter</a>.
+    In an effort to get good (and maintain my writing habit, even it's just a few words), I'm going to try to do a little exploration around the Vicsek model.</p>
+    <p>The <a href="https://en.wikipedia.org/wiki/Vicsek_model">Vicsek model</a> is a minimal* model of collective motion (here, in 2D).
+    \[
+    B_i(t) := \{j \in B : \lVert \vec{r_j(t)} - \vec{r_i(t)} \rVert < R, j \neq i\}
+    \]
+    \[
+    \theta_i(t+1) = \frac{1}{|B_i(t)|} \sum_{j \in B_i(t)} \theta_j(t) + \eta
+    \]
+    \[
+    \vec{r_i(t+1)} = \vec{r_i(t)} + v\begin{bmatrix}
+        \cos(\theta_i(t)) \\
+        \sin(\theta_i(t)) \\
+        \end{bmatrix}
+    \]
+    where:
+    <br>\(B_i(t)\) is the set of particles within a fixed radius \(R\) of particle/boid \(i\) at time \(t\),
+    <br>\(\vec{r_i(t)}\) is the position of particle/boid \(i\) at time \(t\),
+    <br>\(v\) is a fixed speed for all the particles/boids,
+    <br>and \(\eta\) is a fixed random noise term for the angle updates.
+    </p>
+    <script>
+        async function run(){
+            const canvas = document.getElementById("cv");
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let iters = 100;
+            function boid(x, y, theta){
+                this.x = x;
+                this.y = y;
+                this.theta = theta;
+                this.next_x = x;
+                this.next_y = y;
+                this.next_theta = theta;
+            }
+            const boid_count = document.getElementById("num_boids").value;
+            const boids = [];
+            for(var i = 0; i < boid_count; i++){
+                let x = Math.floor(Math.random() * 500);
+                let y = Math.floor(Math.random() * 500);
+                let theta = Math.random() * 2 * Math.PI;
+                boids.push(new boid(x, y, theta));
+            }
+            while(iters-- > 0){
+                const radius = document.getElementById("radius").value;
+                const speed = document.getElementById("speed").value;
+                const noise = document.getElementById("noise_level").value / 100;
+                for(var i = 0; i < boids.length; i++){
+                    let b = boids[i];
+                    let theta = 0;
+                    let count = 0;
+                    for(var j = 0; j < boids.length; j++){
+                        if (i == j) continue;
+                        let b2 = boids[j];
+                        const dist = Math.sqrt(Math.pow(b.x - b2.x, 2) + Math.pow(b.y - b2.y, 2));
+                        if (dist < radius){
+                            theta += b2.theta;
+                            ++count;
+                        }
+                    }
+                    if (count !== 0){
+                        b.next_theta = (theta / count) + (Math.random()) * Math.PI * 2 * noise;
+                    }
+                    b.next_x = b.x + speed*Math.cos(b.next_theta);
+                    b.next_y = b.y + speed*Math.sin(b.next_theta);
+                    if (b.next_x < 0) b.next_x += 500;
+                    if (b.next_x > 500) b.next_x -= 500;
+                    if (b.next_y < 0) b.next_y += 500;
+                    if (b.next_y > 500) b.next_y -= 500;
+                }
+                //erase:
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for(var i = 0; i < boids.length; i++){
+                    let b = boids[i];
+                    b.x = b.next_x;
+                    b.y = b.next_y;
+                    b.theta = b.next_theta;
+                    ctx.fillStyle = "hsl(" + (i*360/boids.length) + ", 100%, 50%)";
+                    ctx.fillRect(b.x, b.y, 2, 2);
+                    ctx.fill();
+                }
+                //wait for 100ms:
+                await new Promise(r => setTimeout(r, 100));
+            }
+        }
+        async function run_topo(){
+            const canvas = document.getElementById("cv");
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let iters = 100;
+            function boid(x, y, theta){
+                this.x = x;
+                this.y = y;
+                this.theta = theta;
+                this.next_x = x;
+                this.next_y = y;
+                this.next_theta = theta;
+            }
+            const boid_count = document.getElementById("num_boids").value;
+            const boids = [];
+            for(var i = 0; i < boid_count; i++){
+                let x = Math.floor(Math.random() * 500);
+                let y = Math.floor(Math.random() * 500);
+                let theta = Math.random() * 2 * Math.PI;
+                boids.push(new boid(x, y, theta));
+            }
+            while(iters-- > 0){
+                const speed = document.getElementById("speed").value;
+                const noise = document.getElementById("noise_level").value / 100;
+                for(var i = 0; i < boids.length; i++){
+                    const knn = [];
+                    let dists = [];
+                    let mindist = 1000000;
+                    let b = boids[i];
+                    let theta = 0;
+                    let count = 0;
+                    for(var j = 0; j < boids.length; j++){
+                        if (i == j) continue;
+                        let b2 = boids[j];
+                        const dist = Math.sqrt(Math.pow(b.x - b2.x, 2) + Math.pow(b.y - b2.y, 2));
+                        if (knn.length < 7){
+                            knn.push(b2.theta);
+                            dists.push(dist);
+                        }
+                        else {
+                            let maxdist = Math.max(...dists);
+                            if (dist < maxdist){
+                                let maxdist_idx = dists.indexOf(maxdist);
+                                knn[maxdist_idx] = b2.theta;
+                                dists[maxdist_idx] = dist;
+                            }
+                        }
+                    }
+                    for (var j = 0; j < knn.length; j++){
+                        theta += knn[j];
+                    }
+                    b.next_theta = (theta / knn.length) + (Math.random()) * Math.PI * 2 * noise;
+                    b.next_x = b.x + speed*Math.cos(b.next_theta);
+                    b.next_y = b.y + speed*Math.sin(b.next_theta);
+                    if (b.next_x < 0) b.next_x += 500;
+                    if (b.next_x > 500) b.next_x -= 500;
+                    if (b.next_y < 0) b.next_y += 500;
+                    if (b.next_y > 500) b.next_y -= 500;
+                }
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for(var i = 0; i < boids.length; i++){
+                    let b = boids[i];
+                    b.x = b.next_x;
+                    b.y = b.next_y;
+                    b.theta = b.next_theta;
+                    ctx.fillStyle = "hsl(" + (i*360/boids.length) + ", 100%, 50%)";
+                    ctx.fillRect(b.x, b.y, 2, 2);
+                    ctx.fill();
+                }
+                await new Promise(r => setTimeout(r, 100));
+            }
+        }
+    </script>
+    <hr><h3>Toy</h3>
+    <input type="range" min="20" max="2000" value="500" class="slider" id="num_boids">
+    <label for="num_boids">Number of Boids</label> 
+    <p>Set the number of particles/boids, then have fun playing with the sliders below (can you spot the phase transition?):</p>
+    <br>
+    <canvas id="cv" width="500" height="500" style="border:solid 1px"></canvas>
+    <br>
+    <input type="range" min="0" max="100" value="30" class="slider" id="noise_level">
+    <label for="noise_level">Noise Level</label>
+    <br>
+    <input type="range" min="1" max="100" value="5" class="slider" id="speed">
+    <label for="speed">Speed</label>
+    <br>
+    <input type="range" min="0" max="100" value="10" class="slider" id="radius">
+    <label for="radius">Radius</label>
+    <br>
+    <button onclick="run()">Run</button>
+    <button onclick="run_topo()">Run Topo</button>
+    <button onclick="run_grid()">Run Grid</button>
+    <hr><h3>Topological vs. metric update rules</h3>
+    <p>As I was learning about the Vicsek model, I recalled <a href="https://doi.org/10.1073/pnas.0711437105">reading</a> some time ago that updates in swarms of starlings have been observed to be 
+        based on a topological rather than a metric rule (i.e. a particle would update its direction based on its k nearest neighbors, not based on neighbors defined by an epsilon ball).
+    </p>
+    <p>The paper linked there puts the average number of neighbors at around 6.5 +/- 0.9. To that end, you can click the "Run Topo" button above to get a Vicsek-like simulation where the update rule is determined by 7 nearest neighbors rather than by a ball of radius R.</p>
+    <p>Why isn't there a metric update rule? One hypothesis is that the topological rule is more robust to predation: when subjected to an attack from a predator such as a hawk, flocks using the topological rule will tend to stay together, while flocks using the the metric rule will tend to divide.
+        Another hypothesis is that the tracking of neighbors depends on a cgonitive process that is different than counting i.e. <a href="https://en.wikipedia.org/wiki/Subitizing">subitizing</a>. Intuitively, that makes sense -- it is quite hard to picture a metric rule with even a fuzzy radius somehow running in the background while a living creature is doing what it does best.</p>
+    </p>
+    <p>The linked paper is a real delight, I recommend reading it. Parisi also recently came out with a book <i>In a Flight of Starlings</i> which I recommend picking up.</p>
+    <hr><h3>Do Vicsek models yield graphons? And is that of any use?</h3>
+    <p>A <a href="https://en.wikipedia.org/wiki/Graphon">graphon</a> can be defined as follows: assign a vertex \(v\) a value \(val(v)\) of \(0\) or \(1\) with equal probability, and include an edge connecting \(v_i\) and \(v_j\) with some probability \(W(val(v_i), val(v_j))\)
+        such that \(W: [0,1]^2 \rightarrow [0,1]\).</p>
+    <p>If we take the random initialization of particle/boid position on an \(N \times N\) grid to be our vertex assignment (\(1\) if containing a boid, \(0\) otherwise), and we take the probability of an edge between two vertices to be a function of the speed and the update rule (i.e. the probability of an edge between two vertices is the probability of boid (\j\) being "in the neighborhood of" boid \(i\) at time \(t\)), then we might just have a graphon here.</p>
+    <p>Of course, we might not. But I'm curious to learn about both of these topics, and being wrong would still teach me plenty. At worst, it'll give me something to keep the writing habit going.</p>
+    <hr><h5>Footsies:</h5>
+        <b>^</b>recently, I've had the time to invest in the interest, but in truth, I am cribbing some of these readings and references from a short love affair I had with the topic a few years ago.
+        <br><b>*</b>I don't quite think there's a rigorous definition of "minimal model" out there. My best guess is that this model is minimal
+        in the sense that it has relatively few parameters to mess with: a level of noise for the direction update, a radius that defines what is and is not a neighbor, and a fixed speed.
+    <hr>
