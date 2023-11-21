@@ -29,6 +29,7 @@ github_username:  hitzelc
 
 # Build settings
 theme: minima
+markdown: kramdown
 plugins:
   - jekyll-feed
 
