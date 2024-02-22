@@ -1,0 +1,41 @@
+# %%
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+import requests
+# %%
+r = requests.get("https://registrar.mit.edu/stats-reports/majors-count/")
+mit_data = pd.read_html(r.text)[0]
+mit_data.dropna(inplace=True)
+mit_data.drop_duplicates(inplace=True)
+mit_data["Year"] = f'{2023}-{2024}'
+mit_data = mit_data[mit_data["Course"].str.contains("I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX|XXI|XXII|XXIII|XXIV")]
+mit_data.rename(columns={"Secondary Majors":"Second Majors"}, inplace=True)
+# %%
+for year in range(2017,2023):
+    r = requests.get(f"https://registrar.mit.edu/stats-reports/majors-count/{year}-{year+1}")
+    mit_data2 = pd.read_html(r.text)[0]
+    mit_data2.dropna(inplace=True)
+    mit_data2.drop_duplicates(inplace=True)
+    if year == 2017:
+        mit_data2.rename(columns={"Secondary Major Count":"Second Majors", "Primary Major Count":"Primary Majors"}, inplace=True)
+    if year == 2020:
+        mit_data2.rename(columns={"Second  Majors":"Second Majors", "Primary  Majors":"Primary Majors"}, inplace=True)
+    mit_data2 = mit_data2[mit_data2["Course"].str.contains("I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX|XXI|XXII|XXIII|XXIV")]
+    mit_data2["Year"] = f'{year}-{year+1}'
+    mit_data = pd.concat([mit_data, mit_data2])
+mit_data.replace("-", 0, inplace=True)
+# %%
+mit_data["Master Total"] = mit_data["Primary Majors"].astype('float') + mit_data["Second Majors"].astype('float')
+mit_data["Roman"] = mit_data["Course"].str.extract(r'(\bI\b|\bII\b|\bIII\b|\bIV\b|\bV\b|\bVI\b|\bVII\b|\bVIII\b|\bIX\b|\bX\b|\bXI\b|\bXII\b|\bXIII\b|\bXIV\b|\bXV\b|\bXVI\b|\bXVII\b|\bXVIII\b|\bXIX\b|\bXX\b|\bXXI\b|\bXXII\b|\bXXIII\b|\bXXIV\b)')
+mit_data["Friendly"] = mit_data["Roman"].map({"I":"Civ", "II":"Mech", "III":"MatSci", "IV":"Arch", "V":"Chem", "VI":"EECS", "VII":"Bio", "VIII":"Phys", "IX":"Neuro", "X":"ChemEng", "XI":"Urban", "XII":"Atmos", "XIV":"Econ", "XV":"Biz", "XVI":"AeroAstro", "XVII":"PolSci", "XVIII":"Math", "XX":"BioEng", "XXI":"Hum", "XXII":"Nuke", "XXIV":"LingPhi"})
+mit_data_grouped = mit_data.groupby(["Year","Friendly"]).sum()
+plt.figure(figsize=(10,10))
+sns.lineplot(data=mit_data_grouped, x="Year", y="Master Total", hue="Friendly", ci=None)
+friendlynames = ["Civ", "Mech", "MatSci", "Arch", "Chem", "EECS", "Bio", "Phys", "Neuro", "ChemEng", "Urban", "Atmos", "Econ", "Biz","AeroAstro","PolSci", "Math", "BioEng", "Hum", "Nuke", "LingPhi"]
+friendlynames.sort()
+plt.legend(title="Course", loc='upper left', labels=friendlynames)
+for i, row in mit_data_grouped.iterrows():
+    plt.text(row.name[0], row["Master Total"], row.name[1], fontsize=6)
+plt.ylabel("Total Primary + Secondary Majors")
+#plt.ylim(0,250) #for zoomed plot
