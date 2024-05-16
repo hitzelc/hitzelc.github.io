@@ -11,9 +11,9 @@ layout: base
 
 
   {% if site.paginate %}
-    {% assign posts = paginator.posts %}
+    {% assign posts = paginator.posts | sort: 'modified_date' | reverse %}
   {% else %}
-    {% assign posts = site.posts %}
+    {% assign posts = site.posts | sort: 'modified_date' | reverse %}
   {% endif %}
 
 
@@ -25,7 +25,15 @@ layout: base
       {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
       {%- for post in posts -%}
       <li>
-        <span class="post-meta">{{ post.date | date: date_format }}</span>
+        {%- if post.layout == "post" -%}
+          <span class="post-meta">{{ post.date | date: date_format }}</span>
+          <span class="post-meta">(less of a note, more of a post)</span>
+        {%- elsif post.layout == "old" -%}
+          <span class="post-meta">{{ post.date | date: date_format }}</span>
+          <span class="post-meta">(migrated content)</span>
+        {%- else -%}
+          <span class="post-meta">Updated: {{ post.modified_date | date: date_format }}</span>
+        {%- endif -%}
         <h3>
           <a class="post-link" href="{{ post.url | relative_url }}">
             {{ post.title | escape }}

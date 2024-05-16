@@ -4,3 +4,8 @@ _site
 .jekyll-metadata
 vendor
 .DS_Store
+grabdata
+_posts/draft*
+*.jld2
+scratchpad/
+participant_responses/
