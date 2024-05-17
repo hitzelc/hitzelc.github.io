@@ -17,6 +17,7 @@ RL/Alphazero ref dump:
 * [Acquisition of Chess Knowledge in AlphaZero](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9704706/pdf/pnas.202206625.pdf)
 * [Impartial Games: A Challenge for Reinforcement Learning](https://arxiv.org/abs/2205.12787)
 * [Minimal and Clean Reinforcement Learning Examples](https://github.com/rlcode/reinforcement-learning/tree/master)
+* [Reinforcement learning on the combinatorial game of Nim](https://www.csc.kth.se/utbildning/kth/kurser/DD143X/dkand11/Group6Lars/erik.jarleberg.report.pdf)
 
 Combinatorial game ref dump:
 * [Some Problems in Combinatorial Game Theory](https://www.mathcamp.org/files/math/Alfonso-CGT-handout.pdf)
