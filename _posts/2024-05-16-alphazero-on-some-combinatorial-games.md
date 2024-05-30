@@ -2,13 +2,15 @@
 layout: note
 title:  "Trying AlphaZero on Some Combinatorial Games"
 date:   2024-05-16 00:00:00 -0500
-modified_date: 2024-05-16 16:35:00 -0500
+modified_date: 2024-05-30 19:30:00 -0500
 categories: math,rl
 ---
 
 One lazy thing to do when you want to try and learn a few things is to smash them all together. It is probably suboptimal but it is something of a time-saver. I had a desire to get familiar with Julia, to understand AlphaZero a little better, and to get familiar with some aspects of combinatorial games, so why not train a model to play a combinatorial game or two?
 
-Current status: implemented a bad version of AlphaZero in Julia using the monkey-see-monkey-do method (monkey saw a tutorial+repo and a different Julia implementation). Working through some BatchNorm instability and figuring out if monkey did what monkey saw correctly. Will need to compare against the referenced existing implementations and troubleshoot. May wind up just using one of those two once I feel that I "get it."
+~~Current status: implemented a bad version of AlphaZero in Julia using the monkey-see-monkey-do method (monkey saw a tutorial+repo and a different Julia implementation). Working through some BatchNorm instability and figuring out if monkey did what monkey saw correctly. Will need to compare against the referenced existing implementations and troubleshoot. May wind up just using one of those two once I feel that I "get it."~~
+
+Current status (5/30ish): Coming back to this after being busy w/ some work. Still figuring out what I am doing wrong w.r.t. BatchNorm. I'm thinking I did something stupid and obvious (only in retrospect of course). Going to use a canned library after some more wrestling as I am pretty eager to poke at the policies learned for some combinatorial games. I can always circle back to implementation.
 
 RL/Alphazero ref dump:
 * [A Simple Alpha(Go) Zero Tutorial](https://suragnair.github.io/posts/alphazero.html)
