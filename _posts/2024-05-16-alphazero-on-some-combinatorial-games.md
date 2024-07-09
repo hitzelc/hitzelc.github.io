@@ -2,7 +2,7 @@
 layout: note
 title:  "Trying AlphaZero on Some Combinatorial Games"
 date:   2024-05-16 00:00:00 -0500
-modified_date: 2024-07-01 14:15:00 -0500
+modified_date: 2024-07-09 10:45:00 -0500
 categories: math,rl
 ---
 
@@ -22,6 +22,26 @@ One lazy thing to do when you want to try and learn a few things is to smash the
 
 7/1: Policy loss was starting to spontaneously comubst. Realized I was taking the log of some 0s so I am just uniformly adding 1e-35 jsut before taking the log to avoid that. Plotting the value estimates for all 1-100 pairings doesn't exactly look *promising* but it definitely looks *not discouraging*.
 ![values](/images/combgame_values070124.png)
+
+7/1 evening: I think the network is stuck in some sort of local minima. Loss just plateaus. Maybe I should try changing the learning rate or introducing a bit more exploration?
+
+7/2: Ahhhhhh. I wasn't tracking which player's turn it was... I reintroduced the self-play step, but I may need to take it back out for the time being. The threshold is pretty unforgiving if the network performs like garbage, which does seem to happen a lot early on. That means a lot of wasted training. I'm trying to give more examples in a pass first.
+
+7/3: Okay, fixed those issues. Took the self-play back out -- it's hard to say just what a "sensible" win-rate is for this game, and for quite some time I was just throwing away every round of training. I also started allowing for the saving & loading of the MCTS data, as throwing it away and starting fresh each run seems imprudent if not outright incorrect. The handy tutorial points out that in the original AlphaGo paper the policy taken after MCTS is eventually turned greedy after about 30 "moves" in the game -- I was not doing this, so I made that change. Doing a nice long run, let's see if the value estimates start looking more like what would be implied by the optimal strategy. I dropped c_puct back to 1. There really are a lot of hyperparameters flying around in deep RL, and I assume this is a mild case. I haven't been very rigorous about all my changes. My intent is to train something that looks about right, and then I can backtrack and do everything from scratch across with rigorous change tracking. If I do get half-decent performance here, I'd love to get my feet wet with some "mechanistic interpretability" ala *Acquisition of Chess Knowledge in AlphaZero*.
+
+7/4-7/8: Cloned the alpha-zero-general repo and tried implementing the game of Euclid there (Python & PyTorch). I'd like to compare training results. I'd also like to sanity check my MCTS vs the one in there by running a few pairs of numbers through each search procedure. My very light literature search seems to indicate that deep RL doesn't often perform well on Nim-variants/combinatorial games, but I need to be really certain there is no issue in my current implementation to pursue this. I saw a few papers/theses that used tabular methods on Nim(-variants) with success, so it might be prudent to sub in something like that in place of the policy/value network (maybe some kind of Monte Carlo control method would do? Or really simple policy iteration? I have some Sutton & Barto exercises I can repurpose here so that'd be the prudent/lazy choice).
+
+7/9: I wasn't masking invalid moves, I was making invalid moves lead to a loss. My theory as to why that is bad is that it means "wait for my opponent to do something really stupid" could become a valid strategy to learn -- or more like "I can learn an arbitrary strategy so long as my opponent does something stupid next move." E.g. say we start with (4, 12). Player 1 ought to play 3 and win at (4, 0), but when we don't mask illegal moves who's to say it's wrong to play e.g. 1 if player 2 might play 8 and you win anyway? Without thinking too deeply, I'd think this would make learning pretty difficult (inefficient?) since there are all sorts of advantageous positions that could get totally blown up. Eventually we should still expect to see low probabilities assigned to these illegal actions, but we're total noobs and training on CPU here so let's not push our luck, eh?
+
+Also realized the self-play aspect is meant to use MCTS as well (duh).  Self-play doesn't seem to add much for the game of Euclid. Constantly just throwing away networks. One could also frame that as "freshly trained networks don't improve much," but how do we know the network isn't just one prod or jostle away from some interesting point in the landsacpe? I'll keep tinkering either way.
+
+Here's yesterday's value plot:
+![values2](/images/combgame_values070824.png)
+
+Here's today's value plot:
+![values3](/images/combgame_values070924.png)
+
+Optimal Euclid means player 1 should win when the larger value divided by the smaller value is an integer or is greater than the golden ratio, and player 2 otherwise. So the dark triangle forming between \\(\phi\\) and \\(1/\phi\\) was a good sign. Today's plot definitely shows the effects of masking (I only allow actions of choosing multiplier 1 - 10 right now), which is no issue, but the positive glow in that inner triangle is giving me pause. I'm not sure if I introduced some error somewhere or if we're learning. We'll see, I guess.
 
 RL/Alphazero ref dump:
 * [A Simple Alpha(Go) Zero Tutorial](https://suragnair.github.io/posts/alphazero.html)
